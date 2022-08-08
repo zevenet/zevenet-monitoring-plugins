@@ -720,19 +720,15 @@ sub processResults()
 		$code = "OK";
 		foreach my $bck ( @{ $params } )
 		{
+			$msg = "$msg"
+			  . ", Backend='$bck->{'ip'}:$bck->{'port'}' "
+			  . "status='$bck->{'status'}' ";
+
 			if ( defined $bck->{ 'established' } and defined $bck->{ 'pending' } )
 			{
 				$msg = "$msg"
-				  . "Backend='$bck->{'ip'}:$bck->{'port'}' "
-				  . "status='$bck->{'status'}' "
 				  . "(established_connections='$bck->{'established'}') "
 				  . "(pending_connections='$bck->{'pending'}')";
-			}
-			else
-			{
-				$msg = "$msg"
-				  . "Backend='$bck->{'ip'}:$bck->{'port'}' "
-				  . "status='$bck->{'status'}' ";
 			}
 
 			$status = &checkCode( $bck, $warning, $critical );
@@ -742,6 +738,7 @@ sub processResults()
 				$code = $status if ( $code ne "CRITICAL" );
 			}
 		}
+		$msg =~ s/^,\s//;
 	}
 
 	if ( ref $params eq 'HASH' )
