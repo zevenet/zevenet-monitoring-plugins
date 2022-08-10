@@ -216,44 +216,45 @@ sub zapiCall()
 	$ua->default_header( 'Content-Type' => 'application/json' );
 	$ua->default_header( 'ZAPI_KEY'     => "$zapikey" );
 
+	# Get request and response.
 	my $request = HTTP::Request->new( GET => "https://$host:$port$url" );
 	my $response = $ua->request( $request );
 
-	if ( $response->is_success )
+	# Verbose.
+	if ( $mp->opts->verbose )
 	{
-		# Decoding JSON.
-		$json_response = decode_json( $response->content );
+		print Dumper ( "Request:",  $request );
+		print Dumper ( "------------------------------------" );
+		print Dumper ( "Response:", $response );
+	}
 
-		# Parse JSON.
-		if ( $mp->opts->verbose )
-		{
-			print Dumper ( "Request:",  $request );
-			print Dumper ( "------------------------------------" );
-			print Dumper ( "Response:", $response );
-		}
+	# 500 errors.
+	if ( defined $response->{ '_rc' }
+		 and $response->{ '_rc' } =~ /^5\d{2}$/ )
+	{
+		$mp->nagios_exit( return_code => UNKNOWN,
+						  message     => $response->{ '_msg' } );
 	}
 
 	# Wrong ZAPI key.
-	if ( defined $response->{ '_msg' } )
+	if ( defined $response->{ '_msg' }
+		 and $response->{ '_msg' } eq 'Authorization Required' )
 	{
-		if ( $response->{ '_msg' } eq 'Authorization Required' )
-		{
-			$mp->nagios_exit(
-				return_code => CRITICAL,
-				message =>
-				  "The authentication failed. Please, review the following settings\n*) The zapi user is enabled: clicking on ZEVENET Webgui 'System > User'."
-			);
-		}
+		$mp->nagios_exit(
+			return_code => CRITICAL,
+			message =>
+			  "The authentication failed. Please, review the following settings\n*) The zapi user is enabled: clicking on ZEVENET Webgui 'System > User'."
+		);
 	}
+
+	# Decoding JSON.
+	$json_response = decode_json( $response->content );
 
 	# Add message for error.
 	unless ( $response->is_success )
 	{
-		$mp->nagios_exit(
-				  return_code => UNKNOWN,
-				  message =>
-					"There was an error in the load balancer. The command could not finish."
-		);
+		$mp->nagios_exit( return_code => CRITICAL,
+						  message     => $json_response->{ 'message' } );
 	}
 
 	return $json_response;
