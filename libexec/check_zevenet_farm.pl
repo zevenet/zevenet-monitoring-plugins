@@ -150,6 +150,22 @@ $mp->add_arg(
 	required => 0
 );
 
+# Maintenance
+$mp->add_arg(
+	spec => 'maintenance|m',
+	help => qq{-m, --maintenance
+    Set warning for maintenance status },
+	required => 0
+);
+
+# Problem
+$mp->add_arg(
+	spec => 'problem|p',
+	help => qq{-p, --problem
+    Set warning for Problem status },
+	required => 0
+);
+
 # Parse arguments and process standard ones (e.g. usage, help, version).
 $mp->getopts;
 
@@ -168,6 +184,8 @@ my $farmname      = $mp->opts->farmname;
 my $port          = $mp->opts->port // 444;
 my $zapikey       = $mp->opts->zapikey;
 my $timeout       = $mp->opts->timeout;
+my $maintenance   = "false";
+my $problem       = "false";
 
 # Get a summary of connections and configuration for all farms in the system.
 # https://www.zevenet.com/zapidocv4.0/#show-farms-statistics
@@ -200,10 +218,16 @@ if ( $warning[0] >= $critical[0] or $warning[1] >= $critical[1] )
 	$mp->nagios_die( "*** CRITICAL level must be greater than WARNING!\n" );
 }
 
-# Check cache
+# Check cache.
 $cache = "false" if ( defined $mp->opts->no_cache );
 $cache_tiemout = $mp->opts->cache_timeout
   if ( defined $mp->opts->cache_timeout );
+
+# Set warning for maintenance status.
+$maintenance = "true" if ( defined $mp->opts->maintenance );
+
+# Set warning for problem status.
+$problem = "true" if ( defined $mp->opts->problem );
 
 use Switch;
 
@@ -227,7 +251,8 @@ switch ( $cache )
 
 		# Show the result and exit.
 		my ( $output_code, $msg ) =
-		  &processResults( $farm_data, \@warning, \@critical, $farmname );
+		  &processResults( $farm_data, \@warning,    \@critical,
+						   $farmname,  $maintenance, $problem );
 		$mp->nagios_exit( return_code => $output_code, message => $msg, );
 	}
 	case "true"
@@ -262,7 +287,8 @@ switch ( $cache )
 
 			# Show the result and exit.
 			my ( $output_code, $msg ) =
-			  &processResults( $farm_data, \@warning, \@critical, $farmname );
+			  &processResults( $farm_data, \@warning,    \@critical,
+							   $farmname,  $maintenance, $problem );
 			$mp->nagios_exit( return_code => $output_code, message => $msg, );
 		}
 		else
@@ -286,9 +312,9 @@ switch ( $cache )
 
 			# Show the result and exit.
 			my ( $output_code, $msg ) =
-			  &processResults( $farm_data, \@warning, \@critical, $farmname );
+			  &processResults( $farm_data, \@warning,    \@critical,
+							   $farmname,  $maintenance, $problem );
 			$mp->nagios_exit( return_code => $output_code, message => $msg, );
 		}
 	}
 }
-

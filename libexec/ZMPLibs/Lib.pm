@@ -661,6 +661,10 @@ Function: checkCode
 
 Parameters:
 	hash_ref - Contains the farm or backend data, refer to gerFarmData or getBackendData doc for further information.
+	String - "true" set warning for maintenance status "false" set critical for maintenance status (false by default).
+	String - "true" set warning for problem status "false" set critical for problem status (false by default).
+	Array  - Warning parameters.
+	Array  - Critical parameters.
 
 Returns:
 	String - Returns OK, WARNING or CRITICAL.
@@ -668,24 +672,44 @@ Returns:
 
 sub checkCode()
 {
-	my $params   = shift;
-	my $warning  = shift;
-	my $critical = shift;
-	my $code     = "";
+	my $params      = shift;
+	my $maintenance = shift;
+	my $problem     = shift;
+	my $warning     = shift;
+	my $critical    = shift;
+	my $code        = "WARNING";
 
 	# Check established and pending connections.
 	if ( defined $params->{ 'established' } and defined $params->{ 'pending' } )
 	{
-		$code = "WARNING"  if $params->{ 'established' } >= @{ $warning }[0];
-		$code = "WARNING"  if $params->{ 'pending' } >= @{ $warning }[1];
-		$code = "CRITICAL" if $params->{ 'established' } >= @{ $critical }[0];
-		$code = "CRITICAL" if $params->{ 'pending' } >= @{ $critical }[1];
+		if (    $params->{ 'established' } >= @{ $critical }[0]
+			 or $params->{ 'pending' } >= @{ $critical }[1] )
+		{
+			$code = "CRITICAL";
+			return $code;
+		}
 	}
 
-	# Check status.
-	$code = "CRITICAL" if $params->{ 'status' } ne "up";
-
-	$code = "OK" if ( $code eq "" );
+	if ( $params->{ 'status' } eq "maintenance" )
+	{
+		$code = "CRITICAL" if ( $maintenance eq "false" );
+	}
+	elsif ( $params->{ 'status' } eq "up" )
+	{
+		unless (    $params->{ 'established' } >= @{ $warning }[0]
+				 or $params->{ 'pending' } >= @{ $warning }[1] )
+		{
+			$code = "OK";
+		}
+	}
+	elsif ( $params->{ 'status' } eq "problem" )
+	{
+		$code = "CRITICAL" if ( $problem eq "false" );
+	}
+	else
+	{
+		$code = "CRITICAL";
+	}
 
 	return $code;
 }
@@ -697,9 +721,11 @@ Function: processResults
 
 Parameters:
 	Array ref or hash ref - Contains the farm or backend data, refer to gerFarmData or getBackendData doc for further information.
-	array - Warning parameters.
-	array - Critical parameters.
+	Array - Warning parameters.
+	Array - Critical parameters.
 	String - Farm name.
+	String - "true" set warning for maintenance status "false" set critical for maintenance status (false by default).
+	String - "true" set warning for problem status "false" set critical for problem status (false by default).
 
 Returns:
 	String - Returns OK, WARNING or CRITICAL.
@@ -708,13 +734,15 @@ Returns:
 
 sub processResults()
 {
-	my $params   = shift;
-	my $warning  = shift;
-	my $critical = shift;
-	my $farmname = shift;
-	my $status   = "";
-	my $code     = "";
-	my $msg      = "";
+	my $params      = shift;
+	my $warning     = shift;
+	my $critical    = shift;
+	my $farmname    = shift;
+	my $maintenance = shift;
+	my $problem     = shift // "false";
+	my $status      = "";
+	my $code        = "";
+	my $msg         = "";
 
 	if ( ref $params eq 'ARRAY' )
 	{
@@ -732,7 +760,7 @@ sub processResults()
 				  . "(pending_connections='$bck->{'pending'}')";
 			}
 
-			$status = &checkCode( $bck, $warning, $critical );
+			$status = &checkCode( $bck, $maintenance, $problem, $warning, $critical );
 
 			if ( $status ne "OK" )
 			{
@@ -752,7 +780,7 @@ sub processResults()
 		  . "(established_connections='$params->{ 'established' }') "
 		  . "(pending_connections='$params->{ 'pending' }')";
 
-		$code = &checkCode( $params, $warning, $critical );
+		$code = &checkCode( $params, $maintenance, $problem, $warning, $critical );
 	}
 
 	return $code, $msg;
