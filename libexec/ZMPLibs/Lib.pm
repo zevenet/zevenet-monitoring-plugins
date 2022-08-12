@@ -302,9 +302,9 @@ sub checkFarm()
 }
 
 =begin nd
-Function: checkServie
+Function: checkService
 
-	Checks if the service exists.
+	Checks if the service or backend exists.
 
 Parameters:
 	Hash ref - Json with the data of all backends. Refer to zapiCall doc for further information.
@@ -315,7 +315,7 @@ Returns:
 	None.
 =cut
 
-sub checkServie()
+sub checkService()
 {
 	my $params        = shift;
 	my $name          = shift;
@@ -324,21 +324,22 @@ sub checkServie()
 	my $service_found = 1;
 	my $backends      = $params->{ 'backends' };
 
-	unless ( !defined $name )
+	if ( not defined $params->{ 'backends' }->[0] )
+	{
+		$mp->nagios_exit( return_code => CRITICAL,
+						  message     => "backend not found!" );
+	}
+
+	if ( defined $name )
 	{
 		foreach my $bck ( @$backends )
 		{
-			if ( defined $bck->{ 'service' } and $bck->{ 'service' } eq $name )
+			if ( defined $bck->{ 'service' } and $bck->{ 'service' } ne $name )
 			{
-				$service_found = 0;
-				last;
+				$mp->nagios_exit( return_code => CRITICAL,
+								  message     => "service '$name' not found!" );
 			}
-		}
 
-		if ( $service_found != 0 )
-		{
-			$mp->nagios_exit( return_code => CRITICAL,
-							  message     => "service '$name' not found!" );
 		}
 	}
 

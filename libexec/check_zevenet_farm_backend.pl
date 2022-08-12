@@ -238,7 +238,7 @@ switch ( $cache )
 		my $json_response = &zapiCall( $params_ref, $mp );
 
 		# Check if the service exists.
-		&checkServie( $json_response, $service_id, $mp );
+		&checkService( $json_response, $service_id, $mp );
 
 		# Get farm profile.
 		my $farmprofile = &getFarmProfile( $json_response, $service_id, $mp );
@@ -284,7 +284,7 @@ switch ( $cache )
 			&lockResource( $lock_cache, "ud", $fh );
 
 			# Check if the service exists.
-			&checkServie( $json_response, $service_id, $mp );
+			&checkService( $json_response, $service_id, $mp );
 
 			# Get farm profile.
 			my $farmprofile = &getFarmProfile( $json_response, $service_id, $mp );
@@ -318,7 +318,7 @@ switch ( $cache )
 			my ( $output_error, $json_response ) = &getCacheData( $cache_file, $debug );
 
 			# Check if the service exists.
-			&checkServie( $json_response, $service_id, $mp );
+			&checkService( $json_response, $service_id, $mp );
 
 			# Get farm profile.
 			my $farmprofile = &getFarmProfile( $json_response, $service_id, $mp );
