@@ -323,23 +323,28 @@ sub checkService()
 	my $service       = "";
 	my $service_found = 1;
 	my $backends      = $params->{ 'backends' };
-
 	if ( not defined $params->{ 'backends' }->[0] )
 	{
 		$mp->nagios_exit( return_code => CRITICAL,
 						  message     => "backend not found!" );
 	}
-
 	if ( defined $name )
 	{
 		foreach my $bck ( @$backends )
 		{
-			if ( defined $bck->{ 'service' } and $bck->{ 'service' } ne $name )
+			if ( defined $bck->{ 'service' } and $bck->{ 'service' } eq $name )
 			{
+				$service_found = 0;
+				last;
 				$mp->nagios_exit( return_code => CRITICAL,
 								  message     => "service '$name' not found!" );
 			}
 
+		}
+		if ( $service_found != 0 )
+		{
+			$mp->nagios_exit( return_code => CRITICAL,
+							  message     => "service '$name' not found!" );
 		}
 	}
 
