@@ -175,10 +175,6 @@ $mp->getopts;
 
 my $debug         = "true" if ( defined $mp->opts->debug );
 my $zapi_version  = "v4.0";
-my $cache         = "true";
-my $cache_file    = "/tmp/farm-cache";
-my $lock_cache    = "/tmp/farm-cache.lock";
-my $cache_tiemout = 60;
 my $host          = $mp->opts->host;
 my $farmname      = $mp->opts->farmname;
 my $port          = $mp->opts->port // 444;
@@ -186,6 +182,10 @@ my $zapikey       = $mp->opts->zapikey;
 my $timeout       = $mp->opts->timeout;
 my $maintenance   = "false";
 my $problem       = "false";
+my $cache         = "true";
+my $cache_file    = "/tmp/farm-cache-${host}";
+my $lock_cache    = "/tmp/farm-cache-${host}.lock";
+my $cache_tiemout = 60;
 
 # Get a summary of connections and configuration for all farms in the system.
 # https://www.zevenet.com/zapidocv4.0/#show-farms-statistics
