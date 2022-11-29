@@ -175,10 +175,6 @@ $mp->getopts;
 
 my $debug         = "true" if ( defined $mp->opts->debug );
 my $zapi_version  = "v4.0";
-my $cache         = "true";
-my $cache_file    = "/tmp/backend-cache";
-my $lock_cache    = "/tmp/backend-cache.lock";
-my $cache_tiemout = 60;
 my $host          = $mp->opts->host;
 my $farmname      = $mp->opts->farmname;
 my $port          = $mp->opts->port // 444;
@@ -186,6 +182,10 @@ my $zapikey       = $mp->opts->zapikey;
 my $timeout       = $mp->opts->timeout;
 my $service_id    = $mp->opts->service;
 my $maintenance   = "false";
+my $cache         = "true";
+my $cache_file    = "/tmp/backend-cache-${host}-${farmname}";
+my $lock_cache    = "/tmp/backend-cache-${host}-${farmname}.lock";
+my $cache_tiemout = 60;
 
 # Shows the current farm status, their backend status and connections. Each farm will response with a different object, depending on the profile.
 # https://www.zevenet.com/zapidocv4.0/#show-farm-statistics
