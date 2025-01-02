@@ -199,7 +199,8 @@ Restart Icinga process and access Icinga web interface to see the services you h
 
 If you need to check CPU, disk, memory, etc... then we recommend using SNMP protocol or NRPE protocol. For more information about how to use SNMP protocol please refer to this article:
 
-https://www.zevenet.com/knowledge-base/howtos/understanding-snmp-in-a-siem-environment-and-monitoring-zevenet-appliance/
+[https://www.relianoid.com/knowledge-base/howtos/understanding-snmp-in-a-siem-environment-and-monitoring-zevenet-appliance/
+](https://www.relianoid.com/resources/knowledge-base/howtos/understanding-snmp-in-a-siem-environment-and-monitoring-relianoid-appliance/)
 
 For more information about how to use NRPE protocol please refer to this article:
 
